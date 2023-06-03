@@ -14,7 +14,7 @@ router.post("/", (req, res, next) => {
     });
 });
 
-// product id specific routes. "/products/{some_id}"
+// product id specific routes. "/products/{product_id}"
 router.get("/:productID", (req, res, next) => {
     const id = req.params.productID;
     if (id == "69") {
