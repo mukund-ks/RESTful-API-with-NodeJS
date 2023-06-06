@@ -8,6 +8,7 @@ const Product = require("../models/product");
 router.get("/", (req, res, next) => {
     Order.find()
         .select("product quantity _id")
+        .populate("product","name price _id")
         .exec()
         .then(doc => {
             if (doc.length == 0) {
@@ -22,6 +23,7 @@ router.get("/", (req, res, next) => {
                             quantity: d.quantity,
                             request: {
                                 type: "GET",
+                                description: "DETAILED_ORDER_VIEW",
                                 url: `http://localhost:3000/orders/${d._id}`
                             }
                         };
@@ -60,6 +62,7 @@ router.post("/", (req, res, next) => {
                 },
                 request: {
                     type: "GET",
+                    description: "DETAILED_ORDER_VIEW",
                     url: `http://localhost:3000/orders/${result._id}`
                 }
             });
@@ -75,6 +78,7 @@ router.get("/:orderID", (req, res, next) => {
     const id = req.params.orderID;
     Order.findById(id)
         .select("_id product quantity")
+        .populate("product","name price _id")
         .exec()
         .then(order => {
             if (order) {
@@ -105,7 +109,7 @@ router.delete("/:orderID", (req, res, next) => {
                 message: "Order deleted",
                 request: {
                     type: "POST",
-                    description: "Create a new order",
+                    description: "CREATE_NEW_ORDER",
                     url: "http://localhost:3000/orders/",
                     body: { productID: "ID", quantity: "Number" }
                 }

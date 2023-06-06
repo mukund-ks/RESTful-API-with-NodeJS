@@ -22,6 +22,7 @@ router.get("/", (req, res, next) => {
                             _id: d._id,
                             request: {
                                 type: "GET",
+                                description: "DETAILED_PRODUCT_VIEW",
                                 url: `http://localhost:3000/products/${d._id}`
                             }
                         };
@@ -52,6 +53,7 @@ router.post("/", (req, res, next) => {
                     _id: result._id,
                     request: {
                         type: "GET",
+                        description: "VIEW_CREATED_PRODUCT",
                         url: `http://localhost:3000/products/${result._id}`
                     }
                 }
@@ -104,6 +106,7 @@ router.patch("/:productID", (req, res, next) => {
                 },
                 request: {
                     type: "GET",
+                    description: "VIEW_UPDATED_PRODUCT",
                     url: `http://localhost:3000/products/${result._id}`
                 }
             });
@@ -123,7 +126,7 @@ router.delete("/:productID", (req, res, next) => {
                 message: "Product Deleted",
                 request: {
                     type: "POST",
-                    description: "Create a new Product",
+                    description: "CREATE_NEW_PRODUCT",
                     url: "http://localhost:3000/products",
                     body: { name: "String", price: "Number" }
                 }
