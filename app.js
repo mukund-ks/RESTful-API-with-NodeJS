@@ -15,6 +15,8 @@ mongoose.connect(
 // Middlewares - in order.
 app.use(logger('dev'));
 
+app.use("/uploads",express.static("uploads"))
+
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(bodyParser.json());

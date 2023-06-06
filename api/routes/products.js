@@ -2,12 +2,37 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
 const mongoose = require("mongoose");
-const product = require("../models/product");
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./uploads/");
+    },
+    filename: function (req, file, cb) {
+        cb(null, new Date().toISOString().replace(/:/g, "-") + file.originalname);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === "image/jpeg" || file.mimetype === "image/jpg" || file.mimetype === "image/png") {
+        cb(null, true);
+    } else {
+        cb(new Error("Unsupported File Type"), false);
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 10
+    },
+    fileFilter: fileFilter
+});
 
 // generic product routes. "/products"
 router.get("/", (req, res, next) => {
     Product.find()
-        .select("name price _id")
+        .select("name price _id productImage")
         .exec()
         .then(doc => {
             if (doc.length == 0) {
@@ -20,6 +45,7 @@ router.get("/", (req, res, next) => {
                             name: d.name,
                             price: d.price,
                             _id: d._id,
+                            productImage: d.productImage,
                             request: {
                                 type: "GET",
                                 description: "DETAILED_PRODUCT_VIEW",
@@ -37,11 +63,14 @@ router.get("/", (req, res, next) => {
         });
 });
 
-router.post("/", (req, res, next) => {
+router.post("/", upload.single("productImage"), (req, res, next) => {
+    console.log(req.file);
+    console.log(req.body);
     const product = new Product({
         _id: new mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        productImage: req.file.path
     });
     product.save() // Not using "exec()" here because save() gives a real promise.
         .then(result => {
@@ -51,6 +80,7 @@ router.post("/", (req, res, next) => {
                     name: result.name,
                     price: result.price,
                     _id: result._id,
+                    productImage: result.productImage,
                     request: {
                         type: "GET",
                         description: "VIEW_CREATED_PRODUCT",
@@ -69,7 +99,7 @@ router.post("/", (req, res, next) => {
 router.get("/:productID", (req, res, next) => {
     const id = req.params.productID;
     Product.findById(id)
-        .select("name price _id")
+        .select("name price _id productImage")
         .exec()
         .then(product => {
             // console.log("From database:", doc);
@@ -102,7 +132,8 @@ router.patch("/:productID", (req, res, next) => {
                 updatedProduct: {
                     name: result.name,
                     price: result.price,
-                    _id: result._id
+                    _id: result._id,
+                    productImage: result.productImage
                 },
                 request: {
                     type: "GET",
@@ -119,7 +150,7 @@ router.patch("/:productID", (req, res, next) => {
 
 router.delete("/:productID", (req, res, next) => {
     const id = req.params.productID;
-    Product.deleteOne({ _id: id })
+    Product.findOneAndDelete({ _id: id })
         .exec()
         .then(() => {
             res.status(200).json({
