@@ -6,13 +6,27 @@ const mongoose = require("mongoose");
 // generic product routes. "/products"
 router.get("/", (req, res, next) => {
     Product.find()
+        .select("name price _id")
         .exec()
         .then(doc => {
-            console.log(doc);
             if (doc.length == 0) {
                 res.status(404).json({ message: "No entries in database" });
             } else {
-                res.status(200).json(doc);
+                const response = {
+                    count: doc.length,
+                    products: doc.map(d => {
+                        return {
+                            name: d.name,
+                            price: d.price,
+                            _id: d._id,
+                            request: {
+                                type: "GET",
+                                url: `http://localhost:3000/products/${d._id}`
+                            }
+                        };
+                    })
+                };
+                res.status(200).json(response);
             }
         })
         .catch(err => {
@@ -29,10 +43,17 @@ router.post("/", (req, res, next) => {
     });
     product.save()
         .then(result => {
-            console.log(result);
             res.status(201).json({
-                message: "POST Request to /products",
-                createdProduct: result
+                message: "Product created successfully",
+                createdProduct: {
+                    name: result.name,
+                    price: result.price,
+                    _id: result._id,
+                    request: {
+                        type: "GET",
+                        url: `http://localhost:3000/products/${result._id}`
+                    }
+                }
             });
         })
         .catch(err => {
@@ -45,11 +66,19 @@ router.post("/", (req, res, next) => {
 router.get("/:productID", (req, res, next) => {
     const id = req.params.productID;
     Product.findById(id)
+        .select("name price _id")
         .exec()
         .then(doc => {
             console.log("From database:", doc);
             if (doc) {
-                res.status(200).json(doc);
+                res.status(200).json({
+                    product: doc,
+                    request: {
+                        type: "GET",
+                        description: "GET_ALL_PRODUCTS",
+                        url: `http://localhost:3000/products/`
+                    }
+                });
             } else {
                 res.status(404).json({ message: "No valid entry for provided ID" });
             }
@@ -64,8 +93,18 @@ router.patch("/:productID", (req, res, next) => {
     const id = req.params.productID;
     Product.findByIdAndUpdate(id, { $set: req.body }, { new: true }).exec()
         .then(result => {
-            console.log(result);
-            res.status(200).json(result);
+            res.status(200).json({
+                message: "Product Updated",
+                updatedProduct: {
+                    name: result.name,
+                    price: result.price,
+                    _id: result._id
+                },
+                request: {
+                    type: "GET",
+                    url: `http://localhost:3000/products/${result._id}`
+                }
+            });
         })
         .catch(err => {
             console.log(err);
@@ -77,9 +116,16 @@ router.delete("/:productID", (req, res, next) => {
     const id = req.params.productID;
     Product.deleteOne({ _id: id })
         .exec()
-        .then(result => {
-            console.log(result);
-            res.status(200).json(result);
+        .then(() => {
+            res.status(200).json({
+                message: "Product Deleted",
+                request: {
+                    type: "POST",
+                    description: "Create a new Product",
+                    url: "http://localhost:3000/products",
+                    body: { name: "String", price: "Number" }
+                }
+            });
         })
         .catch(err => {
             console.log(err);
