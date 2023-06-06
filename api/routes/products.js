@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/product");
 const mongoose = require("mongoose");
+const product = require("../models/product");
 
 // generic product routes. "/products"
 router.get("/", (req, res, next) => {
@@ -10,7 +11,7 @@ router.get("/", (req, res, next) => {
         .exec()
         .then(doc => {
             if (doc.length == 0) {
-                res.status(404).json({ message: "No entries in database" });
+                res.status(404).json({ message: "No Product entries in Database" });
             } else {
                 const response = {
                     count: doc.length,
@@ -41,7 +42,7 @@ router.post("/", (req, res, next) => {
         name: req.body.name,
         price: req.body.price
     });
-    product.save()
+    product.save() // Not using "exec()" here because save() gives a real promise.
         .then(result => {
             res.status(201).json({
                 message: "Product created successfully",
@@ -68,11 +69,11 @@ router.get("/:productID", (req, res, next) => {
     Product.findById(id)
         .select("name price _id")
         .exec()
-        .then(doc => {
-            console.log("From database:", doc);
-            if (doc) {
+        .then(product => {
+            // console.log("From database:", doc);
+            if (product) {
                 res.status(200).json({
-                    product: doc,
+                    product: product,
                     request: {
                         type: "GET",
                         description: "GET_ALL_PRODUCTS",
@@ -80,7 +81,7 @@ router.get("/:productID", (req, res, next) => {
                     }
                 });
             } else {
-                res.status(404).json({ message: "No valid entry for provided ID" });
+                res.status(404).json({ message: "No valid product for provided ID" });
             }
         })
         .catch(err => {
@@ -91,7 +92,8 @@ router.get("/:productID", (req, res, next) => {
 
 router.patch("/:productID", (req, res, next) => {
     const id = req.params.productID;
-    Product.findByIdAndUpdate(id, { $set: req.body }, { new: true }).exec()
+    Product.findByIdAndUpdate(id, { $set: req.body }, { new: true })
+        .exec()
         .then(result => {
             res.status(200).json({
                 message: "Product Updated",
