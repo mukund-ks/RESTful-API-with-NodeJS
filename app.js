@@ -2,9 +2,15 @@ const express = require("express");
 const app = express();
 const logger = require("morgan");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const productRoutes = require("./api/routes/products");
 const orderRoutes = require("./api/routes/orders");
+
+// Connecting to DB
+mongoose.connect(
+    "mongodb+srv://mukundKS:"+process.env.MONGO_ATLAS_PASS+"@cluster0.c9zrqw0.mongodb.net/?retryWrites=true&w=majority"
+);
 
 // Middlewares - in order.
 app.use(logger('dev'));
