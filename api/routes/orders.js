@@ -36,7 +36,7 @@ router.get("/", (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({ error: err });
-        })
+        });
 });
 
 router.post("/", (req, res, next) => {
@@ -71,7 +71,7 @@ router.post("/", (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({ error: err });
-        })
+        });
 });
 
 // order-id specific routes. "/orders/{order_id}"
@@ -98,7 +98,7 @@ router.get("/:orderID", (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({ error: err });
-        })
+        });
 });
 
 router.delete("/:orderID", (req, res, next) => {
@@ -119,7 +119,7 @@ router.delete("/:orderID", (req, res, next) => {
         .catch(err => {
             console.log(err);
             res.status(500).json({ error: err });
-        })
+        });
 });
 
 module.exports = router;
