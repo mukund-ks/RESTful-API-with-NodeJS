@@ -3,9 +3,10 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const Order = require("../models/order");
 const Product = require("../models/product");
+const checkAuth = require("../middleware/check-auth");
 
 // generic order routes. "/orders"
-router.get("/", (req, res, next) => {
+router.get("/", checkAuth, (req, res, next) => {
     Order.find()
         .select("product quantity _id")
         .populate("product","name price _id")
@@ -39,7 +40,7 @@ router.get("/", (req, res, next) => {
         });
 });
 
-router.post("/", (req, res, next) => {
+router.post("/", checkAuth, (req, res, next) => {
     Product.findById(req.body.productID).exec()
         .then(product => {
             if (!product) {
@@ -75,7 +76,7 @@ router.post("/", (req, res, next) => {
 });
 
 // order-id specific routes. "/orders/{order_id}"
-router.get("/:orderID", (req, res, next) => {
+router.get("/:orderID", checkAuth, (req, res, next) => {
     const id = req.params.orderID;
     Order.findById(id)
         .select("_id product quantity")
@@ -101,7 +102,7 @@ router.get("/:orderID", (req, res, next) => {
         });
 });
 
-router.delete("/:orderID", (req, res, next) => {
+router.delete("/:orderID", checkAuth, (req, res, next) => {
     const id = req.params.orderID;
     Order.deleteOne({ _id: id })
         .exec()
